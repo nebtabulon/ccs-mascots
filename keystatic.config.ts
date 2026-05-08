@@ -6,7 +6,7 @@ export default config({
     kind: 'cloud',
   },
   cloud: {
-    project: 'ccs-mascots/ccs-mascots',
+    project: 'ccs-mascots/ccs-mascots1',
   },
   collections: {
     pricingGuideCards: collection({
