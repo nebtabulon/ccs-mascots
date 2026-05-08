@@ -1,0 +1,244 @@
+.hero {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  height: calc(100vh - var(--nav-h));
+  overflow: hidden;
+}
+
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3.5rem 3rem;
+  gap: 1.6rem;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.logo-wrapper {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+.logo-wrapper img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.hero-headline {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.08;
+}
+
+.line-purple,
+.line-pink {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(3rem, 5.5vw, 5rem);
+}
+
+.line-purple { color: var(--purple); }
+.line-pink   { color: var(--pink);   }
+
+.hero-tagline {
+  font-size: 1.45rem;
+  color: #444;
+  max-width: 38ch;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.hero-right {
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--gap);
+  width: calc(var(--col-w) * 2 + var(--gap));
+  flex-shrink: 1;
+  min-width: var(--col-w);
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+.hero-right::before,
+.hero-right::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 90px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.hero-right::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--cream), transparent);
+}
+
+.hero-right::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--cream), transparent);
+}
+
+.marquee-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  width: var(--col-w);
+  flex-shrink: 0;
+  flex-grow: 0;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+
+.gallery-item {
+  flex-shrink: 0;
+  width: 100%;
+  height: 333px;
+  background: #d8d8d8;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 20%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 80%
+  );
+  transform: translateX(-140%);
+  pointer-events: none;
+}
+
+.gallery-item.is-loading::after {
+  animation: ghostShimmer 1.15s linear infinite;
+}
+
+.gallery-item.has-img::after {
+  display: none;
+}
+
+.gallery-item-img.is-loading {
+  opacity: 0;
+}
+
+.gallery-item-img.is-loaded {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+@keyframes ghostShimmer {
+  to {
+    transform: translateX(140%);
+  }
+}
+
+@media (max-width: 1400px) {
+  .hero-right {
+    width: var(--col-w);
+  }
+
+  .hero-right .marquee-col:nth-child(2) {
+    display: none;
+  }
+}
+
+@media (max-width: 768px), (max-height: 829px) {
+  .hero {
+    flex-direction: column;
+    align-items: center;
+    height: auto;
+    overflow: visible;
+  }
+
+  .hero-left {
+    padding: 2.5rem 1.5rem;
+    align-items: center;
+    text-align: center;
+  }
+
+  .logo-wrapper { width: 180px; }
+
+  .hero-buttons { justify-content: center; }
+
+  .hero-right {
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 20px;
+    padding: 0 0 2rem;
+    overflow: hidden;
+    height: auto;
+  }
+
+  .hero-right::before,
+  .hero-right::after { display: none; }
+
+  .row-wrap {
+    position: relative;
+    overflow: hidden;
+    height: 160px;
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .row-wrap::before,
+  .row-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .row-wrap::before {
+    left: 0;
+    background: linear-gradient(to right, var(--cream), transparent);
+  }
+
+  .row-wrap::after {
+    right: 0;
+    background: linear-gradient(to left, var(--cream), transparent);
+  }
+
+  .marquee-col {
+    flex-direction: row;
+    width: max-content;
+    flex-shrink: 0;
+    height: 160px;
+    gap: var(--gap);
+  }
+
+  .gallery-item {
+    width: auto;
+    height: 160px;
+    aspect-ratio: 344 / 333;
+  }
+
+}

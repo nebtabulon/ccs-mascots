@@ -1,0 +1,187 @@
+---
+interface Props {
+  images: string[];
+}
+const { images } = Astro.props;
+---
+
+<div class="hero-right" id="galleryRight"></div>
+
+<!--
+  Astro's define:vars injects the images array as a JS variable
+  into this inline script block, which then runs the full marquee logic.
+  Add images in Keystatic under the Galleries singleton `galleryImages` field.
+-->
+<script define:vars={{ GALLERY_IMAGES: images }}>
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const IMAGES = shuffle(GALLERY_IMAGES);
+
+const mobile = () => window.innerWidth <= 768 || window.innerHeight < 830;
+
+function setNavHeight() {
+  const nav = document.querySelector('nav');
+  if (nav) document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
+}
+setNavHeight();
+window.addEventListener('resize', setNavHeight);
+
+function splitImages(n) {
+  const buckets = Array.from({ length: n }, () => []);
+  IMAGES.forEach((img, i) => buckets[i % n].push(img));
+  return buckets;
+}
+
+function makeItem(src) {
+  const d = document.createElement('div');
+  if (src) {
+    d.className = 'gallery-item is-loading';
+    const img = document.createElement('img');
+    img.className = 'gallery-item-img is-loading';
+    img.src = src;
+    img.alt = 'CCS Mascots fursuit';
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    const markLoaded = () => {
+      d.classList.remove('is-loading');
+      d.classList.add('has-img');
+      img.classList.remove('is-loading');
+      img.classList.add('is-loaded');
+    };
+    img.addEventListener('load', markLoaded, { once: true });
+    if (img.complete && img.naturalWidth > 0) {
+      markLoaded();
+    }
+    d.appendChild(img);
+  } else {
+    d.className = 'gallery-item';
+  }
+  return d;
+}
+
+function makeCol(dir, images) {
+  const col = document.createElement('div');
+  col.className = `marquee-col dir-${dir}`;
+  const items = images.length > 0 ? images : Array(6).fill('');
+  [...items, ...items].forEach(src => col.appendChild(makeItem(src)));
+  return col;
+}
+
+function buildDesktop(container) {
+  container.innerHTML = '';
+  const [col1imgs, col2imgs] = IMAGES.length > 0 ? splitImages(2) : [[], []];
+  container.appendChild(makeCol('up',   col1imgs));
+  container.appendChild(makeCol('down', col2imgs));
+}
+
+function buildMobile(container) {
+  container.innerHTML = '';
+  const [row1imgs, row2imgs] = IMAGES.length > 0 ? splitImages(2) : [[], []];
+  ['up', 'down'].forEach((dir, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'row-wrap';
+    wrap.appendChild(makeCol(dir, i === 0 ? row1imgs : row2imgs));
+    container.appendChild(wrap);
+  });
+}
+
+const colAnimations = new Map();
+
+function startAnimations(isMob) {
+  const dpr = window.devicePixelRatio || 1;
+  document.querySelectorAll('.marquee-col').forEach(col => {
+    const isUp = col.classList.contains('dir-up');
+    const items = Array.from(col.children);
+    const half = items.length / 2;
+    if (half === 0) return;
+
+    // Measure exact cycle distance: top of item 0 to top of its duplicate.
+    // This is more accurate than summing individual heights + gaps.
+    const r0 = items[0].getBoundingClientRect();
+    const rH = items[half].getBoundingClientRect();
+    let size = isMob ? (rH.left - r0.left) : (rH.top - r0.top);
+    // Snap to the nearest physical pixel so the loop point is always exact.
+    size = Math.round(size * dpr) / dpr;
+    if (size <= 0) return;
+
+    const duration = isMob
+      ? (isUp ? 18000 : 22000)
+      : (isUp ? 22000 : 28000);
+    const speed = size / duration; // px per ms
+
+    // Start dir-down mid-cycle so the two columns are visually offset.
+    let pos = isUp ? 0 : size / 2;
+    let lastTs = null;
+    let running = true;
+    let rafId;
+
+    const existing = colAnimations.get(col);
+    if (existing) existing.cancel();
+
+    function tick(ts) {
+      if (running) {
+        if (lastTs !== null) {
+          pos = (pos + speed * (ts - lastTs)) % size;
+        }
+        lastTs = ts;
+      } else {
+        // Reset lastTs so resuming doesn't jump by the paused duration.
+        lastTs = null;
+      }
+
+      const raw = isUp ? -pos : -(size - pos);
+      // Snap each frame's position to a physical pixel to prevent sub-pixel shimmer.
+      const snapped = Math.round(raw * dpr) / dpr;
+      col.style.transform = isMob
+        ? `translate3d(${snapped}px, 0, 0)`
+        : `translate3d(0, ${snapped}px, 0)`;
+
+      rafId = requestAnimationFrame(tick);
+    }
+
+    rafId = requestAnimationFrame(tick);
+    colAnimations.set(col, {
+      pause()  { running = false; },
+      play()   { running = true; },
+      cancel() { cancelAnimationFrame(rafId); col.style.transform = ''; },
+    });
+  });
+}
+
+function build() {
+  colAnimations.forEach(a => a.cancel());
+  colAnimations.clear();
+  const c = document.getElementById('galleryRight');
+  if (!c) return;
+  const isMob = mobile();
+  isMob ? buildMobile(c) : buildDesktop(c);
+  requestAnimationFrame(() => requestAnimationFrame(() => startAnimations(isMob)));
+}
+
+build();
+
+const right = document.getElementById('galleryRight');
+if (right) {
+  right.addEventListener('mouseenter', () => colAnimations.forEach(a => a.pause()));
+  right.addEventListener('mouseleave', () => colAnimations.forEach(a => a.play()));
+  right.addEventListener('touchstart', () => colAnimations.forEach(a => a.pause()), { passive: true });
+  right.addEventListener('touchend',   () => colAnimations.forEach(a => a.play()));
+}
+
+let wasMobile = mobile();
+window.addEventListener('resize', () => {
+  const now = mobile();
+  if (now !== wasMobile) { wasMobile = now; build(); }
+  else requestAnimationFrame(() => requestAnimationFrame(() => startAnimations(now)));
+});
+
+
+</script>

@@ -1,0 +1,66 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import Hero from '../components/Hero.astro';
+import PricingGuide from '../components/PricingGuide.astro';
+import About from '../components/About.astro';
+import CtaBanner from '../components/CtaBanner.astro';
+import '../styles/global.css';
+import { createReader } from '@keystatic/core/reader';
+import keystaticConfig from '../../keystatic.config';
+import type { ImageMetadata } from 'astro';
+
+const reader = createReader(process.cwd(), keystaticConfig);
+const homeContent = await reader.singletons.home.read();
+const pricingCards = await reader.collections.pricingGuideCards.all();
+
+const allImages = import.meta.glob('/src/images/**/*.{jpg,jpeg,png,webp,gif,avif}', { eager: true }) as Record<string, { default: ImageMetadata }>;
+
+const tiers = pricingCards
+  .filter(({ entry }) => !!entry.image)
+  .map(({ entry }) => ({
+    name: entry.title,
+    price: entry.price,
+    image: allImages[entry.image!]?.default,
+    description: entry.description,
+  }));
+
+const aboutImage = homeContent?.about?.aboutImage ? allImages[homeContent.about.aboutImage]?.default : undefined;
+const ctaImage = homeContent?.cta?.ctaImage ? allImages[homeContent.cta.ctaImage]?.default : undefined;
+---
+
+<Base title="CCS Mascots - Costumes and Fursuits, Maine Made Your Way">
+
+  <Nav />
+
+  <Hero content={homeContent?.hero} />
+  <PricingGuide title={homeContent?.pricingGuide?.pricingTitle} disclaimer={homeContent?.pricingGuide?.pricingDisclaimer} tiers={tiers} />
+  <About title={homeContent?.about?.aboutTitle} body={homeContent?.about?.aboutBody} image={aboutImage} />
+  <CtaBanner title={homeContent?.cta?.ctaTitle} subtitle={homeContent?.cta?.ctaSubtitle} buttonText={homeContent?.cta?.ctaButtonText} buttonUrl={homeContent?.cta?.ctaButtonUrl ?? undefined} image={ctaImage} />
+
+  <script>
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.35, rootMargin: '0px 0px -80px 0px' }
+    );
+    document.querySelectorAll('.pg-item, .about-text, .about-img-wrap, .cta-banner').forEach((el) => observer.observe(el));
+  </script>
+
+  <Footer
+    tagline={homeContent?.footer?.footerTagline}
+    location={homeContent?.footer?.footerLocation}
+    email={homeContent?.footer?.footerEmail}
+    facebookUrl={homeContent?.footer?.facebookUrl}
+    instagramUrl={homeContent?.footer?.instagramUrl}
+    tiktokUrl={homeContent?.footer?.tiktokUrl}
+  />
+
+</Base>

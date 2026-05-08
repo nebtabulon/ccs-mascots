@@ -1,0 +1,74 @@
+---
+import { Image, getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import logoImage from '../images/logo.webp';
+import MarqueeGallery from './MarqueeGallery.astro';
+import '../styles/hero.css';
+import { createReader } from '@keystatic/core/reader';
+import keystaticConfig from '../../keystatic.config';
+
+const reader = createReader(process.cwd(), keystaticConfig);
+
+const allImages = import.meta.glob('/src/images/**/*.{jpg,jpeg,png,webp,gif,avif}', { eager: true }) as Record<string, { default: ImageMetadata }>;
+
+interface Props {
+  content?: {
+    heroHeadlineLine1?: string | null;
+    heroHeadlineLine2?: string | null;
+    heroHeadlineLine3?: string | null;
+    heroTagline?: string | null;
+    heroPrimaryButtonText?: string | null;
+    heroPrimaryButtonUrl?: string | null;
+    heroSecondaryButtonText?: string | null;
+    heroSecondaryButtonUrl?: string | null;
+  } | null;
+}
+const { content } = Astro.props as Props;
+
+const galleries = await reader.singletons.galleries.read();
+const galleryImages: string[] = (
+  await Promise.all(
+    (galleries?.galleryImages ?? [])
+      .filter((item): item is typeof item & { image: string } => !!item.image)
+      .map(async (item) => {
+        const mod = allImages[item.image];
+        if (!mod) return '';
+        const optimized = await getImage({ src: mod.default });
+        return optimized.src;
+      })
+  )
+).filter(Boolean) as string[];
+---
+
+<section class="hero">
+
+  <div class="hero-left">
+    <div class="logo-wrapper">
+      <Image
+        src={logoImage}
+        alt="CCS Mascots Logo"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </div>
+
+    <div class="hero-headline">
+      <span class="line-purple">{content?.heroHeadlineLine1 ?? 'Costumes and'}</span>
+      <span class="line-purple">{content?.heroHeadlineLine2 ?? 'Fursuits, Maine'}</span>
+      <span class="line-pink">{content?.heroHeadlineLine3 ?? 'Made Your Way'}</span>
+    </div>
+
+    <p class="hero-tagline">
+      {content?.heroTagline ?? 'Affordable, Durable, Adorable Custom Costumes made just for you!'}
+    </p>
+
+    <div class="hero-buttons">
+      <a href={content?.heroPrimaryButtonUrl ?? 'https://docs.google.com/forms/d/e/1FAIpQLSdvfWdapp_bzKXglitzdxh65CiGRf7PifEItHlmHBU5zKwX_Q/viewform'} target="_blank" rel="noopener noreferrer" class="btn">{content?.heroPrimaryButtonText ?? 'Get a Quote'}</a>
+      <a href={content?.heroSecondaryButtonUrl ?? 'https://docs.google.com/document/d/1TyKMxOpOX514vxL4cl_tLCc27aMnGeRZZWeNfWybef0/edit?tab=t.0'} target="_blank" rel="noopener noreferrer" class="btn">{content?.heroSecondaryButtonText ?? 'Terms of Service'}</a>
+    </div>
+  </div>
+
+  <MarqueeGallery images={galleryImages} />
+
+</section>

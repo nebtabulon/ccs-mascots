@@ -1,0 +1,122 @@
+.gallery-page {
+  padding: 4rem 2rem 6rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.gallery-header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+  animation: fadeUp 0.5s ease both;
+}
+
+.gallery-title {
+  font-family: 'Fredoka One', cursive;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  color: var(--purple);
+  line-height: 1.1;
+  margin-bottom: 0.3rem;
+}
+
+.gallery-header-rule {
+  width: 60px;
+  height: 3px;
+  background: var(--pink);
+  border-radius: 2px;
+  margin: 0 auto 1rem;
+}
+
+.gallery-grid {
+  columns: 4;
+  column-gap: 12px;
+}
+
+.gallery-grid-item {
+  break-inside: avoid;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #d8d8d8;
+  animation: fadeUp 0.5s ease both;
+  animation-play-state: paused;
+  position: relative;
+}
+
+.gallery-grid-item.is-loading {
+  aspect-ratio: 4 / 3;
+  min-height: 180px;
+}
+
+.gallery-grid-item.go {
+  animation-play-state: running;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; translate: 0 20px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+.gallery-grid-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.gallery-grid-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 20%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 80%
+  );
+  transform: translateX(-140%);
+  pointer-events: none;
+}
+
+.gallery-grid-item.is-loading::after {
+  animation: ghostShimmer 1.15s linear infinite;
+}
+
+.gallery-grid-item.has-img::after {
+  display: none;
+}
+
+.gallery-grid-img.is-loading {
+  opacity: 0;
+}
+
+.gallery-grid-img.is-loaded {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+@keyframes ghostShimmer {
+  to {
+    transform: translateX(140%);
+  }
+}
+
+.gallery-grid-item:hover img {
+  transform: scale(1.05);
+}
+
+@media (max-width: 1024px) {
+  .gallery-grid {
+    columns: 3;
+  }
+}
+
+@media (max-width: 640px) {
+  .gallery-grid {
+    columns: 2;
+    column-gap: 8px;
+  }
+
+  .gallery-grid-item {
+    margin-bottom: 8px;
+  }
+}

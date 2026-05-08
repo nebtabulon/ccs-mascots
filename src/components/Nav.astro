@@ -1,0 +1,25 @@
+---
+import { Image } from 'astro:assets';
+import logoImage from '../images/logo.webp';
+const baseUrl = import.meta.env.BASE_URL;
+---
+<nav>
+  <a href={baseUrl} class="nav-logo" aria-label="Home">
+    <Image
+      src={logoImage}
+      alt="CCS Mascots"
+      loading="eager"
+      fetchpriority="high"
+      decoding="async"
+    />
+  </a>
+  <div class="nav-links">
+    <a href={baseUrl}>Home</a>
+    <a href={`${baseUrl}gallery`}>Gallery</a>
+    <a href="https://www.etsy.com/shop/ccsmascots/" target="_blank" rel="noopener noreferrer">Our Store</a>
+  </div>
+</nav>
+
+<script>
+  document.querySelector('.nav-logo')!.classList.add('visible');
+</script>

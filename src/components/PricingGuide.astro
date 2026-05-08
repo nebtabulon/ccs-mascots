@@ -1,0 +1,59 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import '../styles/priceguide.css';
+
+interface Tier {
+  name: string;
+  price: string;
+  image?: ImageMetadata;
+  description: string;
+}
+
+interface Props {
+  title?: string;
+  disclaimer?: string;
+  tiers?: Tier[];
+}
+
+const {
+  title = 'Price Guide',
+  disclaimer = 'Prices listed are for basic with no added extras. Costs may increase to reflect added details and design difficulty.',
+  tiers = [],
+} = Astro.props as Props;
+---
+
+<section class="pg" id="pricing">
+  <div class="pg-page">
+
+    <header class="pg-header">
+      <h1 class="pg-header-title">{title}</h1>
+      <div class="pg-header-rule"></div>
+    </header>
+
+    <div class="pg-list">
+      {tiers.map((tier) => (
+        <article class="pg-item">
+          {tier.image && (
+            <div class="pg-item-img-wrap">
+              <Image src={tier.image} alt={tier.name} class="pg-item-img" />
+            </div>
+          )}
+          <div class="pg-item-body">
+            <h2 class="pg-item-name">{tier.name}</h2>
+            <div class="pg-item-price-wrap">
+              <span class="pg-item-from">Starting at</span>
+              <span class="pg-item-price">{tier.price}</span>
+            </div>
+            <p class="pg-item-desc">{tier.description}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <aside class="pg-disclaimer">
+      <strong>Please note:</strong> {disclaimer}
+    </aside>
+
+  </div>
+</section>
