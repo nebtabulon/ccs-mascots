@@ -5,9 +5,12 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
+    "cf-typegen": "wrangler types"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "12",
     "@astrojs/markdoc": "^0.12.11",
     "@astrojs/react": "^5.0.4",
     "@keystatic/astro": "^5.0.6",
@@ -19,6 +22,7 @@
     "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0"
+    "@types/node": "^25.6.0",
+    "wrangler": "^4.90.0"
   }
 }
