@@ -1,3 +1,7 @@
 {
-  "galleryImages": []
+  "galleryImages": [
+    {
+      "image": "/src/images/galleryImages/0/image.png"
+    }
+  ]
 }
